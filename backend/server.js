@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
 const connectDB = require('./config/db');
 const taskRoutes = require('./routes/taskRoutes');
 const authRoutes = require('./routes/auth');
@@ -15,19 +16,19 @@ app.use(express.urlencoded({ extended: true }));
 // ============ DATABASE CONNECTION ============
 connectDB();
 
-// ============ HEALTH CHECK ROUTE ============
+// ============ HEALTH CHECK ROUTES ============
 app.get('/', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-    message: 'Server is working',
+    message: 'Server is working 🚀',
     timestamp: new Date().toISOString()
   });
 });
 
 app.get('/health', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-    message: 'Health check passed',
+    message: 'Health check passed ✅',
     uptime: process.uptime()
   });
 });
@@ -40,7 +41,7 @@ app.use('/api/tasks', taskRoutes);
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
+    message: 'Route not found ❌',
     path: req.path
   });
 });
@@ -48,8 +49,7 @@ app.use((req, res) => {
 // ============ ERROR HANDLING MIDDLEWARE ============
 app.use((err, req, res, next) => {
   console.error('❌ Error:', err.message);
-  console.error('Stack:', err.stack);
-  
+
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',
@@ -57,58 +57,27 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ============ SERVER STARTUP ============
-const startServer = async () => {
-  const basePort = parseInt(process.env.PORT || 5000, 10);
-  let port = basePort;
-  const maxAttempts = 10;
-  let attempts = 0;
+// ============ SERVER START ============
+const PORT = process.env.PORT || 5000;
 
-  const server = app.listen;
-  const tryListen = () => {
-    if (attempts >= maxAttempts) {
-      console.error(`❌ Failed to find available port after ${maxAttempts} attempts`);
-      process.exit(1);
-    }
-
-    const listener = app.listen(port, '0.0.0.0', () => {
-      console.log('\n✅ ==========================================');
-      console.log(`✅ Server started successfully!`);
-      console.log(`✅ Listening on: http://localhost:${port}`);
-      console.log(`✅ Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`✅ ==========================================\n`);
-    });
-
-    listener.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.warn(`⚠️  Port ${port} is in use, trying port ${port + 1}...`);
-        port++;
-        attempts++;
-        listener.close();
-        tryListen();
-      } else {
-        console.error('❌ Server error:', err);
-        process.exit(1);
-      }
-    });
-  };
-
-  tryListen();
-};
-
-startServer();
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('\n✅ ==========================================');
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log('✅ ==========================================\n');
+});
 
 // ============ GRACEFUL SHUTDOWN ============
 process.on('SIGTERM', () => {
-  console.log('📌 SIGTERM signal received: closing HTTP server');
+  console.log('📌 SIGTERM received. Shutting down...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('\n📌 SIGINT signal received: closing HTTP server');
+  console.log('\n📌 SIGINT received. Shutting down...');
   process.exit(0);
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('❌ Unhandled Rejection:', reason);
 });
